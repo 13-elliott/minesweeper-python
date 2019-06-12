@@ -85,8 +85,11 @@ class Field:
                 yield zone
 
     def __getitem__(self, item):
-        x, y = item
-        return self._grid[y][x]
+        if isinstance(item, tuple) and len(item) == 2:
+            x, y = item
+            if 0 <= x < self._col_count and 0 <= y < self._row_count:
+                return self._grid[y][x]
+        raise ValueError("Item must be accessed with a tuple describing a coordinate in range")
 
     def _get_zone(self, x, y):
         return self._grid[y][x]
@@ -133,10 +136,10 @@ class Field:
 
     def _set_counts(self, mine_coordinates: Set[Tuple[int, int]]):
         for x, y in mine_coordinates:
-            for zone in self._adjacent_zones(x, y, True):
+            for zone in self.adjacent_zones(x, y, True):
                 zone.adjacent_mine_count += 1
 
-    def _adjacent_zones(self, x: int, y: int, include_diagonals: bool) -> Iterator[Zone]:
+    def adjacent_zones(self, x: int, y: int, include_diagonals: bool) -> Iterator[Zone]:
         if include_diagonals:
             x_range = range(max(0, x - 1), min(self._col_count, x + 2))
             y_range = range(max(0, y - 1), min(self._row_count, y + 2))
@@ -159,7 +162,7 @@ class Field:
         if zone.has_mine:
             self._lost_game = True
         elif zone.adjacent_mine_count == 0:
-            for adjacent_zone in self._adjacent_zones(zone.x, zone.y, False):
+            for adjacent_zone in self.adjacent_zones(zone.x, zone.y, False):
                 if not (adjacent_zone.has_mine or adjacent_zone.adjacent_mine_count or adjacent_zone.revealed):
                     self._reveal_zone(adjacent_zone)
 
