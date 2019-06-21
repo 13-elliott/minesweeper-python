@@ -145,7 +145,7 @@ class Field:
             y_range = range(max(0, y - 1), min(self._row_count, y + 2))
             for this_y in y_range:
                 for this_x in x_range:
-                    if not (this_x == x or this_y == y):
+                    if not (this_x == x and this_y == y):
                         yield self[this_x, this_y]
         else:
             if y - 1 >= 0:
