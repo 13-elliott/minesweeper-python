@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from random import randint
 from typing import Iterator, Tuple, Set, List
 
@@ -125,7 +126,8 @@ class Field:
         return coordinates
 
     @staticmethod
-    def _generate_grid(mine_coordinates: Set[Tuple[int, int]], col_count: int, row_count: int) -> List[List[Zone]]:
+    def _generate_grid(mine_coordinates: Set[Tuple[int, int]],
+                        col_count: int, row_count: int) -> List[List[Zone]]:
         grid = []
         for y in range(row_count):
             row = []
@@ -157,13 +159,13 @@ class Field:
             if y + 1 < self._row_count:
                 yield self[x, y + 1]
 
-    def _reveal_zone(self, zone):
+    def _reveal_zone(self, zone: Zone):
         zone.reveal()
         if zone.has_mine:
             self._lost_game = True
         elif zone.adjacent_mine_count == 0:
             for adjacent_zone in self.adjacent_zones(zone.x, zone.y, False):
-                if not (adjacent_zone.has_mine or adjacent_zone.adjacent_mine_count or adjacent_zone.revealed):
+                if not (adjacent_zone.has_mine or adjacent_zone.adjacent_mine_count != 0 or adjacent_zone.revealed):
                     self._reveal_zone(adjacent_zone)
 
     def reveal(self, x, y):
@@ -177,14 +179,24 @@ class Field:
             self._correctly_flagged += 1 if zone.flagged else -1
 
 
+def run_game():
+    field = Field(10, 10, 3)
+    print(field)
+    while True:
+        action = input("flag or reveal? ").strip().lower()
+        if action.startswith('f'):
+            x = int(input("x: "))
+            y = int(input("y: "))
+            field.toggle_flag(x, y)
+        elif action.startswith('r'):
+            x = int(input("x: "))
+            y = int(input("y: "))
+            field.reveal(x, y)
+        else:
+            # TODO
+            pass
+        print(field)
+
+
 if __name__ == "__main__":
-    game = Field(10, 10, 4)
-    game.toggle_flag(2, 3)
-    print(game, end="\n\n")
-    for z in game:
-        z.reveal()
-    print(game)
-    for z in game:
-        z._revealed = False
-    game.reveal(int(input("x: ")), int(input("y: ")))
-    print(game)
+    run_game()
